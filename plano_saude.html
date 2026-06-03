@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu Plano de Saúde</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Nunito+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --pink: #e8609a; --pink-dark: #d94f82; --pink-light: #fce4ec;
+    --orange: #e8609a; --orange-light: #fce4ec;
+    --bg: #fff0f5; --card: #ffffff; --text: #2d1b22;
+    --text2: #7b3a56; --text3: #b97a96; --border: #f8c8db;
+    --radius: 16px; --radius-sm: 10px;
+  }
+  body { font-family: 'Nunito Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 40px; }
+  header { background: linear-gradient(135deg, #b5336a 0%, #e8609a 100%); padding: 28px 20px 20px; text-align: center; position: relative; overflow: hidden; }
+  header::before { content: ''; position: absolute; top: -40px; right: -40px; width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,0.07); }
+  header h1 { font-family: 'Nunito', sans-serif; font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  header p { font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 4px; }
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 16px; max-width: 480px; margin: 0 auto; }
+  .stat-card { background: var(--card); border-radius: var(--radius-sm); padding: 12px 8px; text-align: center; border: 1px solid var(--border); }
+  .stat-card .val { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 800; color: var(--pink-dark); }
+  .stat-card .lbl { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .tabs { display: flex; max-width: 480px; margin: 0 auto 16px; padding: 0 16px; gap: 8px; }
+  .tab-btn { flex: 1; padding: 12px; border: 2px solid var(--border); border-radius: var(--radius-sm); background: var(--card); font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700; color: var(--text3); cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .tab-btn.active { background: var(--pink); border-color: var(--pink); color: #fff; }
+  .tab-btn span { font-size: 18px; }
+  .content { max-width: 480px; margin: 0 auto; padding: 0 16px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .day-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; scrollbar-width: none; }
+  .day-tabs::-webkit-scrollbar { display: none; }
+  .day-btn { flex-shrink: 0; padding: 7px 14px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--card); font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; color: var(--text3); cursor: pointer; transition: all .2s; }
+  .day-btn.active { background: var(--pink-dark); border-color: var(--pink-dark); color: #fff; }
+  .meal-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; margin-bottom: 12px; }
+  .meal-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .meal-emoji { font-size: 22px; }
+  .meal-title { font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); }
+  .meal-time { margin-left: auto; font-size: 12px; color: var(--text3); background: var(--pink-light); padding: 3px 8px; border-radius: 20px; }
+  .meal-items { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .meal-items li { font-size: 14px; color: var(--text2); display: flex; align-items: flex-start; gap: 8px; line-height: 1.4; }
+  .meal-items li::before { content: '✓'; color: var(--pink); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .kcal-chip { display: inline-block; margin-top: 12px; background: var(--pink-light); color: var(--pink-dark); font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+  .day-total { background: linear-gradient(135deg, var(--pink-dark), var(--pink)); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+  .day-total span { color: rgba(255,255,255,0.85); font-size: 13px; }
+  .day-total strong { color: #fff; font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 800; }
+  .section-title { font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 12px; }
+  .workout-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px; overflow: hidden; }
+  .workout-header { padding: 14px 16px; display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+  .workout-day-badge { color: #fff; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 20px; flex-shrink: 0; }
+  .workout-name { font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700; color: var(--text); flex: 1; }
+  .workout-focus { font-size: 12px; color: var(--text3); }
+  .chevron { font-size: 16px; color: var(--text3); transition: transform .2s; display: inline-block; }
+  .workout-body { display: none; padding: 0 16px 16px; border-top: 1px solid var(--border); }
+  .workout-body.open { display: block; }
+  .exercise { padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .exercise:last-child { border-bottom: none; }
+  .exercise-name { font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .exercise-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .exercise-chips span { background: var(--orange-light); color: var(--pink-dark); padding: 2px 8px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .exercise-tip { font-size: 12px; color: var(--text3); }
+  .rest-tip { background: var(--orange-light); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: #d94f82; margin-top: 10px; }
+  .tip-box { background: var(--pink-light); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .tip-box strong { color: var(--pink-dark); }
+  .day-panel { display: none; }
+  .day-panel.active { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🩷 Meu Plano de Saúde</h1>
+  <p>Dieta + Academia — do seu jeito</p>
+</header>
+
+<div class="stats-row">
+  <div class="stat-card"><div class="val">~1.450</div><div class="lbl">kcal/dia</div></div>
+  <div class="stat-card"><div class="val">~1kg</div><div class="lbl">perda/mês</div></div>
+  <div class="stat-card"><div class="val">3x</div><div class="lbl">treinos/sem</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" id="btn-dieta" onclick="switchTab('dieta', this)"><span>🥗</span> Dieta</button>
+  <button class="tab-btn" id="btn-academia" onclick="switchTab('academia', this)"><span>🏋️</span> Academia</button>
+</div>
+
+<div class="content">
+  <div id="tab-dieta" class="tab-panel active">
+    <div class="day-tabs" id="day-tabs"></div>
+    <div id="days-container"></div>
+  </div>
+  <div id="tab-academia" class="tab-panel">
+    <div class="tip-box">
+      <strong>📌 Como funciona:</strong> 3 treinos por semana (Seg / Qua / Sex). Toque em cada dia para ver os exercícios. Descanse entre os dias de treino. Comece leve — o importante é criar o hábito!
+    </div>
+    <div class="section-title">🗓️ Semana de treinos</div>
+    <div id="workouts-container"></div>
+    <div class="tip-box">
+      <strong>💧 Hidratação:</strong> Beba água antes, durante e depois do treino.<br><br>
+      <strong>⏱️ Descanso entre séries:</strong> 45 a 60 segundos.<br><br>
+      <strong>📈 Progressão:</strong> A cada 2 semanas tente aumentar 1 repetição ou um pouco o peso.
+    </div>
+  </div>
+</div>
+
+<script>
+var currentDay = 0;
+
+var days = [
+  { label: "Seg", total: 1390, meals: [
+    { emoji:"☀️", title:"Café da manhã", time:"07:00", kcal:280, items:["2 ovos mexidos no azeite","2 fatias de pão de forma","Suco de maracujá natural (200ml, sem açúcar)"] },
+    { emoji:"🍌", title:"Lanche da manhã", time:"10:00", kcal:90, items:["1 banana"] },
+    { emoji:"🍽️", title:"Almoço", time:"12:30", kcal:460, items:["Frango desfiado temperado (120g)","Purê de batata (150g)","Arroz branco (3 col. de sopa)"] },
+    { emoji:"🥚", title:"Lanche da tarde", time:"15:30", kcal:110, items:["1 omelete simples (1 ovo + sal)"] },
+    { emoji:"🌙", title:"Jantar", time:"19:00", kcal:450, items:["Carne moída refogada (120g)","Batata cozida (150g)","Arroz branco (2 col. de sopa)"] }
+  ]},
+  { label: "Ter", total: 1380, meals: [
+    { emoji:"☀️", title:"Café da manhã", time:"07:00", kcal:260, items:["2 ovos cozidos","2 fatias de pão de forma","Suco de laranja natural (200ml)"] },
+    { emoji:"🍎", title:"Lanche da manhã", time:"10:00", kcal:80, items:["1 maçã"] },
+    { emoji:"🍽️", title:"Almoço", time:"12:30", kcal:470, items:["Hambúrguer caseiro de carne moída (150g) na frigideira","Batata frita na frigideira com pouco óleo (150g)","Sem pão ou pão pequeno se quiser"] },
+    { emoji:"🥤", title:"Lanche da tarde", time:"15:30", kcal:100, items:["Suco de maracujá natural (200ml, sem açúcar)"] },
+    { emoji:"🌙", title:"Jantar", time:"19:00", kcal:470, items:["Frango desfiado com limão (120g)","Arroz branco (3 col.)","Batata cozida (100g)"] }
+  ]},
+  { label: "Qua", total: 1400, meals: [
+    { emoji:"☀️", title:"Café da manhã", time:"07:00", kcal:290, items:["Omelete simples (2 ovos + sal + azeite)","2 fatias de pão de forma","Suco de maracujá (200ml)"] },
+    { emoji:"🍌", title:"Lanche da manhã", time:"10:00", kcal:90, items:["1 banana pequena"] },
+    { emoji:"🍽️", title:"Almoço", time:"12:30", kcal:460, items:["Ovo frito (1) + frango desfiado (80g)","Batata cozida (150g)","Arroz branco (3 col. de sopa)"] },
+    { emoji:"🥚", title:"Lanche da tarde", time:"15:30", kcal:110, items:["2 ovos cozidos"] },
+    { emoji:"🌙", title:"Jantar", time:"19:00", kcal:450, items:["Carne moída simples (120g)","Batata cozida (150g)","Arroz (2 col.)"] }
+  ]},
+  { label: "Qui", total: 1380, meals: [
+    { emoji:"☀️", title:"Café da manhã", time:"07:00", kcal:270, items:["2 ovos mexidos","2 fatias de pão de forma","Suco de laranja natural (200ml)"] },
+    { emoji:"🍎", title:"Lanche da manhã", time:"10:00", kcal:90, items:["1 maçã ou banana"] },
+    { emoji:"🍽️", title:"Almoço", time:"12:30", kcal:460, items:["Frango desfiado (120g)","Purê de batata (150g)","Arroz branco (3 col.)"] },
+    { emoji:"🥤", title:"Lanche da tarde", time:"15:30", kcal:100, items:["Suco de maracujá natural (200ml)"] },
+    { emoji:"🌙", title:"Jantar", time:"19:00", kcal:460, items:["Hambúrguer caseiro grelhado (150g)","Batata cozida ou frita com pouco óleo (150g)"] }
+  ]},
+  { label: "Sex", total: 1390, meals: [
+    { emoji:"☀️", title:"Café da manhã", time:"07:00", kcal:280, items:["Omelete (2 ovos + sal)","2 fatias de pão de forma","Suco de maracujá (200ml)"] },
+    { emoji:"🍌", title:"Lanche da manhã", time:"10:00", kcal:90, items:["1 banana"] },
+    { emoji:"🍽️", title:"Almoço", time:"12:30", kcal:470, items:["Frango desfiado (120g)","Batata frita com pouco óleo (150g)","Arroz branco (2 col.)"] },
+    { emoji:"🥚", title:"Lanche da tarde", time:"15:30", kcal:110, items:["2 ovos cozidos"] },
+    { emoji:"🌙", title:"Jantar", time:"19:00", kcal:440, items:["Carne moída simples (100g)","Arroz (3 col.)","Batata cozida (100g)"] }
+  ]},
+  { label: "Sáb", total: 1390, meals: [
+    { emoji:"☀️", title:"Café da manhã", time:"08:00", kcal:280, items:["2 ovos fritos","2 fatias de pão de forma","Suco de maracujá (200ml)"] },
+    { emoji:"🍎", title:"Lanche da manhã", time:"10:30", kcal:90, items:["1 fruta"] },
+    { emoji:"🍽️", title:"Almoço", time:"13:00", kcal:490, items:["Hambúrguer caseiro (150g) na frigideira","Batata frita com pouco óleo (150g)","Pão de hambúrguer pequeno (opcional)"] },
+    { emoji:"🥤", title:"Lanche da tarde", time:"16:00", kcal:100, items:["Suco de maracujá ou laranja (200ml, sem açúcar)"] },
+    { emoji:"🌙", title:"Jantar", time:"19:30", kcal:430, items:["Frango desfiado (120g)","Purê de batata (100g)","Arroz (2 col.)"] }
+  ]},
+  { label: "Dom", total: 1390, meals: [
+    { emoji:"☀️", title:"Café da manhã", time:"08:30", kcal:290, items:["Omelete (2 ovos + sal)","2 fatias de pão de forma","Suco de laranja natural (200ml)"] },
+    { emoji:"🍌", title:"Lanche da manhã", time:"11:00", kcal:90, items:["1 banana"] },
+    { emoji:"🍽️", title:"Almoço", time:"13:00", kcal:490, items:["Carne moída (120g) com tempero simples","Batata cozida ou frita (150g)","Arroz branco (3 col.)"] },
+    { emoji:"🥚", title:"Lanche da tarde", time:"16:00", kcal:100, items:["2 ovos cozidos"] },
+    { emoji:"🌙", title:"Jantar", time:"19:00", kcal:420, items:["Frango desfiado (100g)","Batata cozida (100g)","Arroz (2 col.)"] }
+  ]}
+];
+
+var workouts = [
+  { day:"Seg", name:"Treino A — Pernas", focus:"Quadríceps · Glúteos · Panturrilha", badge:"#e8609a", exercises:[
+    { name:"Agachamento livre", series:"3 séries", reps:"12 repetições", tip:"Desça até a coxa ficar paralela ao chão" },
+    { name:"Leg press 45°", series:"3 séries", reps:"15 repetições", tip:"Pés na largura dos ombros" },
+    { name:"Cadeira extensora", series:"3 séries", reps:"15 repetições", tip:"Movimento controlado na volta" },
+    { name:"Cadeira flexora", series:"3 séries", reps:"12 repetições", tip:"Não solte rápido" },
+    { name:"Panturrilha no leg press", series:"4 séries", reps:"20 repetições", tip:"Sobe na ponta do pé devagar" }
+  ]},
+  { day:"Ter", name:"Descanso ativo", focus:"Sem musculação", badge:"#f48fb1", exercises:[
+    { name:"Caminhada leve", series:"1 vez", reps:"20 a 30 min", tip:"Ritmo tranquilo, sem pressa" },
+    { name:"Alongamento geral", series:"1 vez", reps:"10 a 15 min", tip:"Foco nas pernas que treinaram ontem" }
+  ]},
+  { day:"Qua", name:"Treino B — Peito e Tríceps", focus:"Peito · Tríceps · Ombro", badge:"#e8609a", exercises:[
+    { name:"Supino reto (barra ou halteres)", series:"3 séries", reps:"12 repetições", tip:"Desça o cotovelo abaixo do banco" },
+    { name:"Crucifixo com halteres", series:"3 séries", reps:"12 repetições", tip:"Leve arco no cotovelo" },
+    { name:"Tríceps pulley (cabo)", series:"3 séries", reps:"15 repetições", tip:"Cotovelo colado no corpo" },
+    { name:"Tríceps testa (halteres)", series:"3 séries", reps:"12 repetições", tip:"Movimento só no cotovelo" },
+    { name:"Elevação lateral (ombro)", series:"3 séries", reps:"15 repetições", tip:"Peso leve, forma perfeita" }
+  ]},
+  { day:"Qui", name:"Descanso ativo", focus:"Sem musculação", badge:"#f48fb1", exercises:[
+    { name:"Caminhada leve", series:"1 vez", reps:"20 a 30 min", tip:"Ou descanso total se estiver cansada" },
+    { name:"Alongamento geral", series:"1 vez", reps:"10 min", tip:"Foco em peito e ombros" }
+  ]},
+  { day:"Sex", name:"Treino C — Costas e Bíceps", focus:"Costas · Bíceps · Core", badge:"#e8609a", exercises:[
+    { name:"Puxada frontal (pulley)", series:"3 séries", reps:"12 repetições", tip:"Puxe até o peito, não atrás da cabeça" },
+    { name:"Remada baixa (cabo)", series:"3 séries", reps:"12 repetições", tip:"Peito erguido, coluna reta" },
+    { name:"Remada unilateral (halter)", series:"3 séries", reps:"12 rep. cada lado", tip:"Apoie o joelho no banco" },
+    { name:"Rosca direta (barra ou halter)", series:"3 séries", reps:"12 repetições", tip:"Sem balançar o corpo" },
+    { name:"Prancha abdominal", series:"3 séries", reps:"30 segundos", tip:"Barriga contraída, quadril reto" }
+  ]},
+  { day:"Sáb", name:"Descanso total", focus:"Recuperação", badge:"#f48fb1", exercises:[
+    { name:"Descanso completo", series:"—", reps:"—", tip:"O músculo cresce no descanso. Aproveite!" }
+  ]},
+  { day:"Dom", name:"Descanso total", focus:"Recuperação", badge:"#f48fb1", exercises:[
+    { name:"Descanso completo", series:"—", reps:"—", tip:"Prepare-se para a semana que vem!" }
+  ]}
+];
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('tab-' + tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+function switchDay(i) {
+  document.querySelectorAll('.day-panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.day-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('day-' + i).classList.add('active');
+  document.querySelectorAll('.day-btn')[i].classList.add('active');
+  currentDay = i;
+}
+
+function toggleWorkout(i) {
+  var body = document.getElementById('wb-' + i);
+  var chev = document.getElementById('chev-' + i);
+  var isOpen = body.classList.toggle('open');
+  chev.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+// Renderiza dieta
+var dayTabsEl = document.getElementById('day-tabs');
+var daysContainer = document.getElementById('days-container');
+
+for (var i = 0; i < days.length; i++) {
+  var day = days[i];
+
+  var btn = document.createElement('button');
+  btn.className = 'day-btn' + (i === 0 ? ' active' : '');
+  btn.textContent = day.label;
+  btn.setAttribute('onclick', 'switchDay(' + i + ')');
+  dayTabsEl.appendChild(btn);
+
+  var panel = document.createElement('div');
+  panel.className = 'day-panel' + (i === 0 ? ' active' : '');
+  panel.id = 'day-' + i;
+
+  var html = '';
+  for (var j = 0; j < day.meals.length; j++) {
+    var m = day.meals[j];
+    var itemsHtml = '';
+    for (var k = 0; k < m.items.length; k++) {
+      itemsHtml += '<li>' + m.items[k] + '</li>';
+    }
+    html += '<div class="meal-card">' +
+      '<div class="meal-header">' +
+        '<span class="meal-emoji">' + m.emoji + '</span>' +
+        '<span class="meal-title">' + m.title + '</span>' +
+        '<span class="meal-time">' + m.time + '</span>' +
+      '</div>' +
+      '<ul class="meal-items">' + itemsHtml + '</ul>' +
+      '<span class="kcal-chip">~' + m.kcal + ' kcal</span>' +
+    '</div>';
+  }
+
+  html += '<div class="day-total"><span>Total do dia</span><strong>~' + day.total + ' kcal</strong></div>';
+  panel.innerHTML = html;
+  daysContainer.appendChild(panel);
+}
+
+// Renderiza academia
+var workoutsContainer = document.getElementById('workouts-container');
+
+for (var wi = 0; wi < workouts.length; wi++) {
+  var w = workouts[wi];
+  var card = document.createElement('div');
+  card.className = 'workout-card';
+
+  var exHtml = '';
+  for (var ei = 0; ei < w.exercises.length; ei++) {
+    var e = w.exercises[ei];
+    exHtml += '<div class="exercise">' +
+      '<div class="exercise-name">' + e.name + '</div>' +
+      '<div class="exercise-chips"><span>' + e.series + '</span><span>' + e.reps + '</span></div>' +
+      '<div class="exercise-tip">💡 ' + e.tip + '</div>' +
+    '</div>';
+  }
+
+  card.innerHTML = '<div class="workout-header" onclick="toggleWorkout(' + wi + ')">' +
+      '<span class="workout-day-badge" style="background:' + w.badge + '">' + w.day + '</span>' +
+      '<div><div class="workout-name">' + w.name + '</div><div class="workout-focus">' + w.focus + '</div></div>' +
+      '<span class="chevron" id="chev-' + wi + '">▼</span>' +
+    '</div>' +
+    '<div class="workout-body" id="wb-' + wi + '">' +
+      exHtml +
+      '<div class="rest-tip">⏱️ Descanse 45 a 60 segundos entre as séries</div>' +
+    '</div>';
+
+  workoutsContainer.appendChild(card);
+}
+</script>
+</body>
+</html>
